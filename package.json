@@ -1,0 +1,20 @@
+{
+  "name": "backend-haciendola-js",
+  "version": "1.0.0",
+  "description": "Desafío técnico para la empresa haciendola",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node --env-file .env --watch ./src/index.js"
+  },
+  "author": "Sebastián Jerez",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "5.1.1",
+    "cors": "2.8.5",
+    "express": "4.19.2",
+    "jsonwebtoken": "9.0.2",
+    "mysql2": "3.9.7",
+    "sequelize": "6.37.3"
+  }
+}
