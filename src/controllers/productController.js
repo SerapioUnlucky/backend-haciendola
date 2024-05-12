@@ -4,7 +4,18 @@ const viewAll = async (req, res) => {
 
     try {
 
-        const products = await product.findAll();
+        let page = 1;
+        const limit = 10;
+
+        if (req.params.page) page = Number(req.params.page);
+
+        const offset = (page - 1) * limit;
+
+        const products = await product.findAll({
+            attributes: ['Handle', 'Title', 'Description', 'SKU', 'Grams', 'Stock', 'Price', 'Compare_Price', 'Barcode'],
+            offset: offset,
+            limit: limit
+        });
 
         if (products.length === 0) {
 
@@ -14,8 +25,13 @@ const viewAll = async (req, res) => {
 
         }
 
+        const totalProducts = await product.count();
+        const totalPages = Math.ceil(totalProducts / limit);
+
         return res.status(200).json({
             message: 'Productos obtenidos correctamente',
+            page: page,
+            totalPages: totalPages,
             products
         });
 
@@ -31,19 +47,29 @@ const viewAll = async (req, res) => {
 
 const create = async (req, res) => {
 
-    const params = req.body;
-
-    if (!params.Handle || !params.Title || !params.Description || !params.SKU || !params.Grams || !params.Stock || !params.Price || !params.Compare_Price || !params.Barcode) {
-
-        return res.status(400).json({
-            message: 'Faltan campos obligatorios'
-        });
-
-    }
-
     try {
 
-        const newProduct = await product.create(params);
+        const params = req.body;
+
+        if (!params.Handle || !params.Title || !params.Description || !params.SKU || !params.Grams || !params.Stock || !params.Price || !params.Compare_Price || !params.Barcode) {
+    
+            return res.status(400).json({
+                message: 'Faltan campos obligatorios'
+            });
+    
+        }
+    
+        const existProduct = await product.findOne({ where: { Handle: params.Handle }, attributes: ['Handle']});
+    
+        if (existProduct) {
+    
+            return res.status(409).json({
+                message: 'El producto ya existe'
+            });
+    
+        }
+
+        const newProduct = await product.create(params, { fields: ['Handle', 'Title', 'Description', 'SKU', 'Grams', 'Stock', 'Price', 'Compare_Price', 'Barcode'] });
 
         return res.status(201).json({
             message: 'Producto creado correctamente',
@@ -53,7 +79,8 @@ const create = async (req, res) => {
     } catch (error) {
 
         return res.status(500).json({
-            message: 'Ha ocurrido un error interno al crear el producto'
+            message: 'Ha ocurrido un error interno al crear el producto',
+            error: error.message
         });
 
     }
@@ -62,12 +89,13 @@ const create = async (req, res) => {
 
 const update = async (req, res) => {
 
-    const id = req.params.id;
-    const params = req.body;
-
     try {
 
-        const existProduct = await product.findOne({ where: { id } });
+        const handle = req.params.handle;
+        const params = req.body;
+        const keys = Object.keys(params);
+
+        const existProduct = await product.findOne({ where: { Handle: handle }, attributes: ['Handle']});
 
         if (!existProduct) {
 
@@ -77,7 +105,7 @@ const update = async (req, res) => {
 
         }
 
-        await product.update(params, { where: { id } });
+        await product.update(params, { where: { Handle: handle }, fields: keys});
 
         return res.status(200).json({
             message: 'Producto actualizado correctamente'
@@ -95,11 +123,11 @@ const update = async (req, res) => {
 
 const deleted = async (req, res) => {
 
-    const id = req.params.id;
-
     try {
 
-        const existProduct = await product.findOne({ where: { id } });
+        const handle = req.params.handle;
+
+        const existProduct = await product.findOne({ where: { Handle: handle }, attributes: ['Handle']});
 
         if (!existProduct) {
 
@@ -109,7 +137,7 @@ const deleted = async (req, res) => {
 
         }
 
-        await product.destroy({ where: { id } });
+        await product.destroy({ where: { Handle: handle } });
 
         return res.status(200).json({
             message: 'Producto eliminado correctamente'
@@ -118,7 +146,8 @@ const deleted = async (req, res) => {
     } catch (error) {
 
         return res.status(500).json({
-            message: 'Ha ocurrido un error interno al eliminar el producto'
+            message: 'Ha ocurrido un error interno al eliminar el producto',
+            error: error.message
         });
 
     }

@@ -4,7 +4,8 @@ const sequelize = require('../config/database');
 const Product = sequelize.define('Product', {
     Handle: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
     Title: {
         type: DataTypes.STRING,
@@ -38,6 +39,8 @@ const Product = sequelize.define('Product', {
         type: DataTypes.STRING,
         allowNull: false
     }
+}, {
+    timestamps: false
 });
 
 module.exports = Product;
