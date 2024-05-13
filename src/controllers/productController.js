@@ -79,8 +79,7 @@ const create = async (req, res) => {
     } catch (error) {
 
         return res.status(500).json({
-            message: 'Ha ocurrido un error interno al crear el producto',
-            error: error.message
+            message: 'Ha ocurrido un error interno al crear el producto'
         });
 
     }
@@ -105,10 +104,11 @@ const update = async (req, res) => {
 
         }
 
-        await product.update(params, { where: { Handle: handle }, fields: keys});
+        const updatedProduct = await product.update(params, { where: { Handle: handle }, fields: keys});
 
         return res.status(200).json({
-            message: 'Producto actualizado correctamente'
+            message: 'Producto actualizado correctamente',
+            product: updatedProduct
         });
 
     } catch (error) {
@@ -137,17 +137,17 @@ const deleted = async (req, res) => {
 
         }
 
-        await product.destroy({ where: { Handle: handle } });
+        const deletedProduct = await product.destroy({ where: { Handle: handle } });
 
         return res.status(200).json({
-            message: 'Producto eliminado correctamente'
+            message: 'Producto eliminado correctamente',
+            product: deletedProduct
         });
 
     } catch (error) {
 
         return res.status(500).json({
-            message: 'Ha ocurrido un error interno al eliminar el producto',
-            error: error.message
+            message: 'Ha ocurrido un error interno al eliminar el producto'
         });
 
     }
