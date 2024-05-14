@@ -128,6 +128,14 @@ const update = async (req, res) => {
         const params = req.body;
         const keys = Object.keys(params);
 
+        if (keys.length === 0) {
+
+            return res.status(400).json({
+                message: 'No hay campos para actualizar'
+            });
+
+        }
+
         const existProduct = await product.findOne({ where: { Handle: handle }, attributes: ['Handle']});
 
         if (!existProduct) {
