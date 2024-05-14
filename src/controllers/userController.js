@@ -8,7 +8,7 @@ const register = async (req, res) => {
 
         const params = req.body;
 
-        if (!params.firstname || !params.lastname || !params.email || !params.username || !params.password) {
+        if (!params.firstname || !params.lastname || !params.username || !params.password) {
 
             return res.status(400).json({
                 message: 'Todos los campos son requeridos'
@@ -30,6 +30,8 @@ const register = async (req, res) => {
         params.password = pwd;
 
         const newUser = await User.create(params);
+
+        newUser.password = undefined;
 
         return res.status(201).json({
             message: 'Usuario registrado correctamente',
@@ -82,9 +84,11 @@ const login = async (req, res) => {
 
         const token = jwt.createToken(existingUser);
 
+        existingUser.password = undefined;
+
         return res.status(200).json({
             message: 'Usuario autenticado correctamente',
-            user: existingUser.username,
+            user: existingUser,
             token
         });
 
@@ -102,9 +106,10 @@ const forgotPassword = async (req, res) => {
 
     try {
 
+        const username = req.params.username;
         const params = req.body;
 
-        if (!params.email || !params.newPassword || !params.confirmPassword) {
+        if (!username || !params.newPassword || !params.confirmPassword) {
 
             return res.status(400).json({
                 message: 'Todos los campos son requeridos'
@@ -120,7 +125,7 @@ const forgotPassword = async (req, res) => {
 
         }
 
-        const existingUser = await User.findOne({ where: { email: params.email } });
+        const existingUser = await User.findOne({ where: { username: username } });
 
         if (!existingUser) {
 
@@ -149,8 +154,40 @@ const forgotPassword = async (req, res) => {
 
 }
 
+const profile = async (req, res) => {
+
+    try {
+
+        const id = req.params.id;
+
+        const user = await User.findOne({ where: { id: id }, attributes: { exclude: ['password'] } });
+
+        if (!user) {
+
+            return res.status(404).json({
+                message: 'Usuario no encontrado'
+            });
+
+        }
+
+        return res.status(200).json({
+            message: 'Usuario encontrado',
+            user
+        });
+        
+    } catch (error) {
+
+        return res.status(500).json({
+            message: 'Ha ocurrido un error interno al buscar el usuario'
+        });
+        
+    }
+
+}
+
 module.exports = {
     register,
     login,
-    forgotPassword
+    forgotPassword,
+    profile
 };

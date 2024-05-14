@@ -5,7 +5,7 @@ const viewAll = async (req, res) => {
     try {
 
         let page = 1;
-        const limit = 10;
+        const limit = 9;
 
         if (req.params.page) page = Number(req.params.page);
 
@@ -39,6 +39,40 @@ const viewAll = async (req, res) => {
 
         return res.status(500).json({
             message: 'Ha ocurrido un error interno al obtener los productos'
+        });
+
+    }
+
+}
+
+const view = async (req, res) => {
+
+    try {
+
+        const handle = req.params.handle;
+
+        const productData = await product.findOne({
+            where: { Handle: handle },
+            attributes: ['Handle', 'Title', 'Description', 'SKU', 'Grams', 'Stock', 'Price', 'Compare_Price', 'Barcode']
+        });
+
+        if (!productData) {
+
+            return res.status(404).json({
+                message: 'Producto no encontrado'
+            });
+
+        }
+
+        return res.status(200).json({
+            message: 'Producto obtenido correctamente',
+            product: productData
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            message: 'Ha ocurrido un error interno al obtener el producto'
         });
 
     }
@@ -156,6 +190,7 @@ const deleted = async (req, res) => {
 
 module.exports = {
     viewAll,
+    view,
     create,
     update,
     deleted
